@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HB - PAY | Silver Edition</title>
+    <title>HB - PAY | Silver Executive</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
     <style>
         :root {
             --primary: #c0c0c0; 
@@ -26,223 +25,85 @@
             color: var(--text-main); overflow: hidden;
         }
 
-        /* LOGIN */
+        /* ANIMAÇÃO DE LOGIN (ÍCONES GIRANDO) */
         #lock-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 10000;
         }
-        .login-box {
-            background: var(--card-bg); padding: 50px; border-radius: 24px;
-            border: 1px solid var(--primary); text-align: center;
-            box-shadow: 0 0 40px var(--primary-glow); backdrop-filter: blur(10px);
+        .orbit-container {
+            position: absolute; width: 400px; height: 400px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .orbit-icon {
+            position: absolute; font-size: 2rem; color: var(--primary);
+            filter: drop-shadow(0 0 10px var(--primary-glow));
+        }
+        .usdt-orbit { animation: orbit1 10s linear infinite; }
+        .brl-orbit { animation: orbit2 10s linear infinite; }
+
+        @keyframes orbit1 {
+            from { transform: rotate(0deg) translateX(170px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(170px) rotate(-360deg); }
+        }
+        @keyframes orbit2 {
+            from { transform: rotate(180deg) translateX(170px) rotate(-180deg); }
+            to { transform: rotate(540deg) translateX(170px) rotate(-540deg); }
         }
 
-        /* APP E SIDEBAR */
+        .login-box {
+            position: relative; background: var(--card-bg); padding: 50px; border-radius: 24px;
+            border: 1px solid var(--primary); text-align: center; width: 320px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8); backdrop-filter: blur(15px); z-index: 10;
+        }
+
+        /* SIDEBAR E APP */
         #app { display: none; height: 100vh; grid-template-columns: 80px 1fr; }
-        
         .sidebar {
             background: #000; border-right: 1px solid rgba(192, 192, 192, 0.1);
-            display: flex; flex-direction: column; align-items: center; padding: 20px 0;
+            display: flex; flex-direction: column; align-items: center; padding: 25px 0;
         }
         .nav-item {
-            color: var(--text-dim); font-size: 1.5rem; margin: 25px 0; cursor: pointer; transition: 0.3s;
+            color: var(--text-dim); font-size: 1.4rem; margin: 22px 0; cursor: pointer; transition: 0.3s;
         }
         .nav-item:hover, .nav-item.active { color: var(--primary); }
+        .nav-item.active { border-right: 3px solid var(--primary); width: 100%; }
 
-        .main-container { padding: 30px; overflow-y: auto; position: relative; }
-        
+        .main-container { padding: 40px; overflow-y: auto; }
         .card {
             background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-            padding: 25px; margin-bottom: 20px;
+            padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* INPUTS E BOTÕES */
-        input, select {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 12px; border-radius: 12px; color: white; outline: none; margin-bottom: 10px;
-        }
+        /* TABELAS E BOTÕES */
         .btn-primary {
-            background: var(--grad-silver); border: none; color: #000; padding: 12px 25px;
-            border-radius: 12px; font-weight: 700; cursor: pointer;
+            background: var(--grad-silver); border: none; color: #000; padding: 12px 24px;
+            border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
         }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px var(--primary-glow); }
+        
+        input {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 10px; color: white; outline: none; margin: 5px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px; color: var(--text-dim); border-bottom: 1px solid #333; }
+        td { padding: 15px 12px; border-bottom: 1px solid #222; }
+
+        .status-pill { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+        .pill-pendente { background: #333; color: #888; }
+        .pill-recebido { background: var(--primary); color: #000; }
 
         .hidden { display: none; }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 10px; color: var(--text-dim); border-bottom: 1px solid #333; }
-        td { padding: 12px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <div id="lock-screen">
-    <div class="login-box">
-        <h1 style="color: var(--primary); margin: 0;">HB - PAY</h1>
-        <p style="color: var(--text-dim); margin-bottom: 30px;">SISTEMA SILVER</p>
-        <input type="password" id="pass-input" placeholder="SENHA" style="text-align: center;">
-        <br><br>
-        <button class="btn-primary" onclick="tryLogin()">ENTRAR</button>
+    <div class="orbit-container">
+        <div class="orbit-icon usdt-orbit"><i class="fa-solid fa-coins"></i></div>
+        <div class="orbit-icon brl-orbit"><i class="fa-solid fa-brazilian-real-sign"></i></div>
     </div>
-</div>
-
-<div id="app">
-    <aside class="sidebar">
-        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fa-solid fa-chart-line"></i></div>
-        <div class="nav-item" onclick="switchTab('operacional', this)"><i class="fa-solid fa-users"></i></div>
-        <div class="nav-item" onclick="switchTab('financeiro', this)"><i class="fa-solid fa-wallet"></i></div>
-        <div class="nav-item" onclick="switchTab('config', this)"><i class="fa-solid fa-gear"></i></div>
-    </aside>
-
-    <main class="main-container">
-        <section id="tab-home">
-            <div class="card">
-                <div style="color: var(--text-dim);">Saldo Geral</div>
-                <div id="dash-saldo-geral" style="font-size: 2.5rem; font-weight: 800;">R$ 0,00</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="card">
-                    <div style="height: 200px;"><canvas id="usdtChart"></canvas></div>
-                </div>
-                <div class="card">
-                    <div style="color: var(--text-dim);">Contas a Pagar</div>
-                    <div id="dash-contas-pagar" style="font-size: 2rem; color: var(--primary);">R$ 0,00</div>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-operacional" class="hidden">
-            <div style="display: grid; grid-template-columns: 250px 1fr; gap: 20px;">
-                <div class="card">
-                    <button class="btn-primary" style="width:100%" onclick="novoCliente()">+ Novo Cliente</button>
-                    <div id="client-list" style="margin-top:20px;"></div>
-                </div>
-                <div class="card">
-                    <h2 id="current-client-name">Selecione um Cliente</h2>
-                    <input type="text" id="in_usdt" placeholder="USDT" oninput="maskMoney(this)">
-                    <input type="text" id="in_rate" placeholder="Cotação" oninput="maskCot(this)">
-                    <button class="btn-primary" onclick="addTrava()">Lançar</button>
-                    <table style="margin-top:20px;">
-                        <thead><tr><th>Volume</th><th>Cotação</th><th>Total BRL</th></tr></thead>
-                        <tbody id="body-travas"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <section id="tab-financeiro" class="hidden">
-            <div class="card">
-                <h2>Gestão Mensal</h2>
-                <div id="fin-lucro-mes" style="font-size: 2rem; color: var(--success);">R$ 0,00</div>
-            </div>
-        </section>
-
-        <section id="tab-config" class="hidden">
-            <div class="card">
-                <h2>Configurações</h2>
-                <button class="btn-primary" onclick="resetSystem()" style="background: #444; color: #fff;">Resetar Dados</button>
-            </div>
-        </section>
-    </main>
-</div>
-
-<script>
-    // Inicialização do Banco de Dados Local
-    let SENHA = localStorage.getItem('hb_pass') || '1881';
-    let db = JSON.parse(localStorage.getItem('hb_pay_v7_db')) || { clientes: {}, financas: [] };
-    let atual = null;
-    let usdtChart = null;
-
-    function tryLogin() {
-        const input = document.getElementById('pass-input').value;
-        if(input === SENHA) {
-            document.getElementById('lock-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'grid';
-            switchTab('home');
-        } else { alert("Senha Incorreta"); }
-    }
-
-    function switchTab(tabId, el) {
-        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('tab-' + tabId).classList.remove('hidden');
-        if(el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
-        if(tabId === 'home') initDash();
-        if(tabId === 'operacional') renderClientes();
-    }
-
-    // Máscaras e Funções
-    function maskMoney(v) {
-        let value = v.value.replace(/\D/g, "");
-        v.value = (value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    }
-
-    function maskCot(v) {
-        let value = v.value.replace(/\D/g, "");
-        if(value.length > 5) value = value.substring(0, 5);
-        if(value.length > 1) v.value = value.substring(0, 1) + "," + value.substring(1);
-    }
-
-    function parseVal(str) { return parseFloat(str.replace(/\./g, '').replace(',', '.')); }
-
-    function novoCliente() {
-        const nome = prompt("Nome do Cliente:");
-        if(!nome) return;
-        const id = "c_" + Date.now();
-        db.clientes[id] = { nome: nome, travas: [], pagos: [] };
-        save(); renderClientes();
-    }
-
-    function selecionarCliente(id) {
-        atual = id;
-        document.getElementById('current-client-name').innerText = db.clientes[id].nome;
-        renderOperacional();
-    }
-
-    function addTrava() {
-        if(!atual) return alert("Selecione um cliente");
-        const u = parseVal(document.getElementById('in_usdt').value);
-        const r = parseVal(document.getElementById('in_rate').value);
-        if(u && r) {
-            db.clientes[atual].travas.push({ usdt: u, rate: r });
-            save(); renderOperacional();
-            document.getElementById('in_usdt').value = ''; document.getElementById('in_rate').value = '';
-        }
-    }
-
-    function renderOperacional() {
-        const body = document.getElementById('body-travas');
-        body.innerHTML = '';
-        db.clientes[atual].travas.forEach(t => {
-            body.innerHTML += `<tr><td>₮ ${t.usdt}</td><td>${t.rate}</td><td>R$ ${(t.usdt*t.rate).toLocaleString('pt-BR')}</td></tr>`;
-        });
-    }
-
-    function renderClientes() {
-        const list = document.getElementById('client-list');
-        list.innerHTML = '';
-        for(let id in db.clientes) {
-            list.innerHTML += `<div style="padding:10px; background:#222; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="selecionarCliente('${id}')">${db.clientes[id].nome}</div>`;
-        }
-    }
-
-    function initDash() {
-        let totalBRL = 0;
-        for(let id in db.clientes) {
-            db.clientes[id].travas.forEach(t => totalBRL += (t.usdt * t.rate));
-        }
-        document.getElementById('dash-saldo-geral').innerText = `R$ ${totalBRL.toLocaleString('pt-BR')}`;
-        updateChart(100, 50);
-    }
-
-    function updateChart(rec, pend) {
-        const ctx = document.getElementById('usdtChart').getContext('2d');
-        if(usdtChart) usdtChart.destroy();
-        usdtChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [rec, pend], backgroundColor: ['#fff', '#333'], borderWidth: 0 }] }, options: { cutout: '80%' } });
-    }
-
-    function save() { localStorage.setItem('hb_pay_v7_db', JSON.stringify(db)); }
-    function resetSystem() { if(confirm("Apagar tudo?")) { localStorage.clear(); location.reload(); } }
-</script>
-</body>
-</html>
+    <div class="login-box">
+        <h1 style="color: var(--primary); margin: 0; letter-spacing: 2px;">HB - PAY</h1>
+        <p style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">SILVER EDITION</p>
