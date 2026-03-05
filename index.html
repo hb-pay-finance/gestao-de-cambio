@@ -3,21 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HB - PAY | Dashboard</title>
+    <title>HB - PAY | Silver Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --primary: #c0c0c0; /* Prata da Logo */
+            --primary: #c0c0c0; 
+            --primary-glow: rgba(192, 192, 192, 0.3);
             --bg-dark: #0a0a0a; 
-            --card-bg: #1a1a1a;
+            --card-bg: rgba(26, 26, 26, 0.95);
             --text-main: #ffffff;
             --text-dim: #888888;
+            --success: #e0e0e0;
+            --grad-silver: linear-gradient(135deg, #e0e0e0 0%, #707070 100%);
         }
 
         body, html {
-            margin: 0; padding: 0; height: 100%; font-family: sans-serif;
-            background: #050505; color: var(--text-main); overflow: hidden;
+            margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            color: var(--text-main); overflow: hidden;
         }
 
         /* LOGIN */
@@ -26,164 +32,217 @@
             background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 10000;
         }
         .login-box {
-            background: var(--card-bg); padding: 40px; border-radius: 20px;
-            border: 1px solid var(--primary); text-align: center; width: 300px;
+            background: var(--card-bg); padding: 50px; border-radius: 24px;
+            border: 1px solid var(--primary); text-align: center;
+            box-shadow: 0 0 40px var(--primary-glow); backdrop-filter: blur(10px);
         }
 
         /* APP E SIDEBAR */
         #app { display: none; height: 100vh; grid-template-columns: 80px 1fr; }
         
         .sidebar {
-            background: #000; border-right: 1px solid #222;
+            background: #000; border-right: 1px solid rgba(192, 192, 192, 0.1);
             display: flex; flex-direction: column; align-items: center; padding: 20px 0;
         }
-        .nav-item { color: var(--text-dim); font-size: 1.5rem; margin: 25px 0; cursor: pointer; }
-        .nav-item.active { color: var(--primary); }
-
-        .main-container { padding: 30px; overflow-y: auto; }
-        .card { background: var(--card-bg); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid #222; }
-
-        input {
-            background: #000; border: 1px solid #333; padding: 10px; border-radius: 8px; color: #fff; width: 80%; margin-bottom: 10px;
+        .nav-item {
+            color: var(--text-dim); font-size: 1.5rem; margin: 25px 0; cursor: pointer; transition: 0.3s;
         }
-        .btn { background: var(--primary); border: none; color: #000; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .nav-item:hover, .nav-item.active { color: var(--primary); }
+
+        .main-container { padding: 30px; overflow-y: auto; position: relative; }
+        
+        .card {
+            background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px; margin-bottom: 20px;
+        }
+
+        /* INPUTS E BOTÕES */
+        input, select {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px; border-radius: 12px; color: white; outline: none; margin-bottom: 10px;
+        }
+        .btn-primary {
+            background: var(--grad-silver); border: none; color: #000; padding: 12px 25px;
+            border-radius: 12px; font-weight: 700; cursor: pointer;
+        }
 
         .hidden { display: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; color: var(--text-dim); border-bottom: 1px solid #333; padding: 10px; }
-        td { padding: 10px; border-bottom: 1px solid #222; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 10px; color: var(--text-dim); border-bottom: 1px solid #333; }
+        td { padding: 12px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
 
 <div id="lock-screen">
     <div class="login-box">
-        <h1 style="color: var(--primary); margin-bottom: 5px;">HB - PAY</h1>
-        <p style="color: var(--text-dim); font-size: 0.8rem; margin-bottom: 20px;">SISTEMA DE GESTÃO</p>
-        <input type="password" id="pass-input" placeholder="SENHA">
-        <button class="btn" style="width: 88%;" onclick="login()">ENTRAR</button>
+        <h1 style="color: var(--primary); margin: 0;">HB - PAY</h1>
+        <p style="color: var(--text-dim); margin-bottom: 30px;">SISTEMA SILVER</p>
+        <input type="password" id="pass-input" placeholder="SENHA" style="text-align: center;">
+        <br><br>
+        <button class="btn-primary" onclick="tryLogin()">ENTRAR</button>
     </div>
 </div>
 
 <div id="app">
     <aside class="sidebar">
-        <div class="nav-item active" onclick="tab('home', this)"><i class="fa-solid fa-house"></i></div>
-        <div class="nav-item" onclick="tab('ops', this)"><i class="fa-solid fa-users"></i></div>
-        <div class="nav-item" onclick="tab('config', this)"><i class="fa-solid fa-gear"></i></div>
+        <div class="nav-item active" onclick="switchTab('home', this)"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="nav-item" onclick="switchTab('operacional', this)"><i class="fa-solid fa-users"></i></div>
+        <div class="nav-item" onclick="switchTab('financeiro', this)"><i class="fa-solid fa-wallet"></i></div>
+        <div class="nav-item" onclick="switchTab('config', this)"><i class="fa-solid fa-gear"></i></div>
     </aside>
 
     <main class="main-container">
         <section id="tab-home">
             <div class="card">
-                <small style="color:var(--text-dim)">Saldo de Travas</small>
-                <h1 id="total-brl">R$ 0,00</h1>
+                <div style="color: var(--text-dim);">Saldo Geral</div>
+                <div id="dash-saldo-geral" style="font-size: 2.5rem; font-weight: 800;">R$ 0,00</div>
             </div>
-            <div class="card" style="max-width: 300px;">
-                <canvas id="meuGrafico"></canvas>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <div style="height: 200px;"><canvas id="usdtChart"></canvas></div>
+                </div>
+                <div class="card">
+                    <div style="color: var(--text-dim);">Contas a Pagar</div>
+                    <div id="dash-contas-pagar" style="font-size: 2rem; color: var(--primary);">R$ 0,00</div>
+                </div>
             </div>
         </section>
 
-        <section id="tab-ops" class="hidden">
-            <div class="card">
-                <button class="btn" onclick="addCli()">+ Novo Cliente</button>
-                <div id="lista-cli" style="margin-top: 15px;"></div>
+        <section id="tab-operacional" class="hidden">
+            <div style="display: grid; grid-template-columns: 250px 1fr; gap: 20px;">
+                <div class="card">
+                    <button class="btn-primary" style="width:100%" onclick="novoCliente()">+ Novo Cliente</button>
+                    <div id="client-list" style="margin-top:20px;"></div>
+                </div>
+                <div class="card">
+                    <h2 id="current-client-name">Selecione um Cliente</h2>
+                    <input type="text" id="in_usdt" placeholder="USDT" oninput="maskMoney(this)">
+                    <input type="text" id="in_rate" placeholder="Cotação" oninput="maskCot(this)">
+                    <button class="btn-primary" onclick="addTrava()">Lançar</button>
+                    <table style="margin-top:20px;">
+                        <thead><tr><th>Volume</th><th>Cotação</th><th>Total BRL</th></tr></thead>
+                        <tbody id="body-travas"></tbody>
+                    </table>
+                </div>
             </div>
-            <div id="area-cliente" class="hidden card">
-                <h2 id="nome-cli">Nome</h2>
-                <input type="text" id="in_u" placeholder="USDT">
-                <input type="text" id="in_r" placeholder="Cotação">
-                <button class="btn" onclick="lancar()">Lançar</button>
-                <table>
-                    <thead><tr><th>USDT</th><th>Rate</th><th>Total BRL</th></tr></thead>
-                    <tbody id="corpo-tabela"></tbody>
-                </table>
+        </section>
+
+        <section id="tab-financeiro" class="hidden">
+            <div class="card">
+                <h2>Gestão Mensal</h2>
+                <div id="fin-lucro-mes" style="font-size: 2rem; color: var(--success);">R$ 0,00</div>
             </div>
         </section>
 
         <section id="tab-config" class="hidden">
             <div class="card">
                 <h2>Configurações</h2>
-                <button class="btn" onclick="localStorage.clear(); location.reload();">Resetar Tudo</button>
+                <button class="btn-primary" onclick="resetSystem()" style="background: #444; color: #fff;">Resetar Dados</button>
             </div>
         </section>
     </main>
 </div>
 
 <script>
-    let db = JSON.parse(localStorage.getItem('hb_db')) || { clientes: {} };
+    // Inicialização do Banco de Dados Local
+    let SENHA = localStorage.getItem('hb_pass') || '1881';
+    let db = JSON.parse(localStorage.getItem('hb_pay_v7_db')) || { clientes: {}, financas: [] };
     let atual = null;
-    let chart;
+    let usdtChart = null;
 
-    function login() {
-        if(document.getElementById('pass-input').value === '1881') {
+    function tryLogin() {
+        const input = document.getElementById('pass-input').value;
+        if(input === SENHA) {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('app').style.display = 'grid';
-            renderHome();
-        } else { alert("Senha incorreta"); }
+            switchTab('home');
+        } else { alert("Senha Incorreta"); }
     }
 
-    function tab(id, el) {
+    function switchTab(tabId, el) {
         document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-        document.getElementById('tab-' + id).classList.remove('hidden');
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'home') renderHome();
-        if(id === 'ops') renderLista();
-    }
-
-    function addCli() {
-        let n = prompt("Nome do cliente:");
-        if(n) { 
-            let id = 'c' + Date.now();
-            db.clientes[id] = { nome: n, travas: [] };
-            save(); renderLista();
+        document.getElementById('tab-' + tabId).classList.remove('hidden');
+        if(el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
         }
+        if(tabId === 'home') initDash();
+        if(tabId === 'operacional') renderClientes();
     }
 
-    function renderLista() {
-        let d = document.getElementById('lista-cli'); d.innerHTML = '';
-        for(let id in db.clientes) {
-            d.innerHTML += `<div onclick="setCli('${id}')" style="background:#222; padding:10px; border-radius:8px; margin-bottom:5px; cursor:pointer;">${db.clientes[id].nome}</div>`;
-        }
+    // Máscaras e Funções
+    function maskMoney(v) {
+        let value = v.value.replace(/\D/g, "");
+        v.value = (value / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     }
 
-    function setCli(id) {
+    function maskCot(v) {
+        let value = v.value.replace(/\D/g, "");
+        if(value.length > 5) value = value.substring(0, 5);
+        if(value.length > 1) v.value = value.substring(0, 1) + "," + value.substring(1);
+    }
+
+    function parseVal(str) { return parseFloat(str.replace(/\./g, '').replace(',', '.')); }
+
+    function novoCliente() {
+        const nome = prompt("Nome do Cliente:");
+        if(!nome) return;
+        const id = "c_" + Date.now();
+        db.clientes[id] = { nome: nome, travas: [], pagos: [] };
+        save(); renderClientes();
+    }
+
+    function selecionarCliente(id) {
         atual = id;
-        document.getElementById('area-cliente').classList.remove('hidden');
-        document.getElementById('nome-cli').innerText = db.clientes[id].nome;
-        renderTabela();
+        document.getElementById('current-client-name').innerText = db.clientes[id].nome;
+        renderOperacional();
     }
 
-    function lancar() {
-        let u = parseFloat(document.getElementById('in_u').value);
-        let r = parseFloat(document.getElementById('in_r').value);
+    function addTrava() {
+        if(!atual) return alert("Selecione um cliente");
+        const u = parseVal(document.getElementById('in_usdt').value);
+        const r = parseVal(document.getElementById('in_rate').value);
         if(u && r) {
-            db.clientes[atual].travas.push({u, r});
-            save(); renderTabela();
-            document.getElementById('in_u').value = ''; document.getElementById('in_r').value = '';
+            db.clientes[atual].travas.push({ usdt: u, rate: r });
+            save(); renderOperacional();
+            document.getElementById('in_usdt').value = ''; document.getElementById('in_rate').value = '';
         }
     }
 
-    function renderTabela() {
-        let b = document.getElementById('corpo-tabela'); b.innerHTML = '';
+    function renderOperacional() {
+        const body = document.getElementById('body-travas');
+        body.innerHTML = '';
         db.clientes[atual].travas.forEach(t => {
-            b.innerHTML += `<tr><td>₮ ${t.u}</td><td>${t.r}</td><td>R$ ${(t.u*t.r).toLocaleString('pt-BR')}</td></tr>`;
+            body.innerHTML += `<tr><td>₮ ${t.usdt}</td><td>${t.rate}</td><td>R$ ${(t.usdt*t.rate).toLocaleString('pt-BR')}</td></tr>`;
         });
     }
 
-    function renderHome() {
-        let total = 0;
+    function renderClientes() {
+        const list = document.getElementById('client-list');
+        list.innerHTML = '';
         for(let id in db.clientes) {
-            db.clientes[id].travas.forEach(t => total += (t.u * t.r));
+            list.innerHTML += `<div style="padding:10px; background:#222; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="selecionarCliente('${id}')">${db.clientes[id].nome}</div>`;
         }
-        document.getElementById('total-brl').innerText = 'R$ ' + total.toLocaleString('pt-BR');
-        
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        if(chart) chart.destroy();
-        chart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [total, 1], backgroundColor: ['#fff', '#222'], borderWidth: 0 }] } });
     }
 
-    function save() { localStorage.setItem('hb_db', JSON.stringify(db)); }
+    function initDash() {
+        let totalBRL = 0;
+        for(let id in db.clientes) {
+            db.clientes[id].travas.forEach(t => totalBRL += (t.usdt * t.rate));
+        }
+        document.getElementById('dash-saldo-geral').innerText = `R$ ${totalBRL.toLocaleString('pt-BR')}`;
+        updateChart(100, 50);
+    }
+
+    function updateChart(rec, pend) {
+        const ctx = document.getElementById('usdtChart').getContext('2d');
+        if(usdtChart) usdtChart.destroy();
+        usdtChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [rec, pend], backgroundColor: ['#fff', '#333'], borderWidth: 0 }] }, options: { cutout: '80%' } });
+    }
+
+    function save() { localStorage.setItem('hb_pay_v7_db', JSON.stringify(db)); }
+    function resetSystem() { if(confirm("Apagar tudo?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
 </html>
