@@ -3,96 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HB - PAY | Silver Executive</title>
+    <title>HB - PAY | Mesa de Câmbio Executiva</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #c0c0c0; 
-            --primary-glow: rgba(192, 192, 192, 0.3);
-            --bg-dark: #0a0a0a; 
-            --card-bg: rgba(26, 26, 26, 0.95);
+            --primary: #ffffff; /* Branco Puro */
+            --accent: #c0c0c0; /* Prata Metálico */
+            --bg-dark: #000000; /* Fundo Black */
+            --card-bg: #0f0f0f; /* Cards Carbono */
             --text-main: #ffffff;
-            --text-dim: #888888;
+            --text-dim: #666666;
             --success: #e0e0e0;
-            --grad-silver: linear-gradient(135deg, #e0e0e0 0%, #707070 100%);
+            --danger: #ff4d4d;
+            --border: rgba(255, 255, 255, 0.1);
         }
 
         body, html {
             margin: 0; padding: 0; height: 100%; font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at top right, #1a1a1a, #050505);
-            color: var(--text-main); overflow: hidden;
+            background-color: var(--bg-dark); color: var(--text-main); overflow: hidden;
         }
 
-        /* ANIMAÇÃO DE LOGIN (ÍCONES GIRANDO) */
+        /* --- TELA DE LOGIN COM ÍCONES EM ÓRBITA --- */
         #lock-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 10000;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            display: flex; justify-content: center; align-items: center; z-index: 10000;
         }
         .orbit-container {
-            position: absolute; width: 400px; height: 400px;
+            position: absolute; width: 350px; height: 350px;
             display: flex; justify-content: center; align-items: center;
         }
         .orbit-icon {
-            position: absolute; font-size: 2rem; color: var(--primary);
-            filter: drop-shadow(0 0 10px var(--primary-glow));
+            position: absolute; font-size: 1.8rem; color: var(--accent);
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
         }
-        .usdt-orbit { animation: orbit1 10s linear infinite; }
-        .brl-orbit { animation: orbit2 10s linear infinite; }
+        .usdt-orbit { animation: orbit1 8s linear infinite; }
+        .brl-orbit { animation: orbit2 8s linear infinite; }
 
         @keyframes orbit1 {
-            from { transform: rotate(0deg) translateX(170px) rotate(0deg); }
-            to { transform: rotate(360deg) translateX(170px) rotate(-360deg); }
+            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
         }
         @keyframes orbit2 {
-            from { transform: rotate(180deg) translateX(170px) rotate(-180deg); }
-            to { transform: rotate(540deg) translateX(170px) rotate(-540deg); }
+            from { transform: rotate(180deg) translateX(150px) rotate(-180deg); }
+            to { transform: rotate(540deg) translateX(150px) rotate(-540deg); }
         }
 
         .login-box {
-            position: relative; background: var(--card-bg); padding: 50px; border-radius: 24px;
-            border: 1px solid var(--primary); text-align: center; width: 320px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.8); backdrop-filter: blur(15px); z-index: 10;
+            position: relative; background: rgba(15, 15, 15, 0.9); padding: 40px; 
+            border-radius: 20px; border: 1px solid var(--border); text-align: center; 
+            width: 320px; backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
-        /* SIDEBAR E APP */
+        /* --- ESTRUTURA PRINCIPAL --- */
         #app { display: none; height: 100vh; grid-template-columns: 80px 1fr; }
+        
         .sidebar {
-            background: #000; border-right: 1px solid rgba(192, 192, 192, 0.1);
-            display: flex; flex-direction: column; align-items: center; padding: 25px 0;
+            background: #000; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; align-items: center; padding: 30px 0;
         }
         .nav-item {
-            color: var(--text-dim); font-size: 1.4rem; margin: 22px 0; cursor: pointer; transition: 0.3s;
+            color: var(--text-dim); font-size: 1.4rem; margin: 25px 0; cursor: pointer; transition: 0.3s;
         }
         .nav-item:hover, .nav-item.active { color: var(--primary); }
-        .nav-item.active { border-right: 3px solid var(--primary); width: 100%; }
+        .nav-item.active { border-right: 3px solid var(--primary); width: 100%; text-align: center; }
 
-        .main-container { padding: 40px; overflow-y: auto; }
-        .card {
-            background: var(--card-bg); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);
-            padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        /* TABELAS E BOTÕES */
-        .btn-primary {
-            background: var(--grad-silver); border: none; color: #000; padding: 12px 24px;
-            border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px var(--primary-glow); }
+        .main-container { padding: 40px; overflow-y: auto; background: #050505; }
         
-        input {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 12px; border-radius: 10px; color: white; outline: none; margin: 5px;
+        .card {
+            background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border);
+            padding: 25px; margin-bottom: 25px;
         }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; padding: 12px; color: var(--text-dim); border-bottom: 1px solid #333; }
-        td { padding: 15px 12px; border-bottom: 1px solid #222; }
+        /* --- BOTÕES E INPUTS ESTILO PREMIUM --- */
+        .btn-premium {
+            background: #fff; color: #000; border: none; padding: 12px 24px;
+            border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase;
+            font-size: 0.75rem; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-premium:hover { background: var(--accent); transform: scale(1.02); }
 
-        .status-pill { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
-        .pill-pendente { background: #333; color: #888; }
-        .pill-recebido { background: var(--primary); color: #000; }
+        input, select {
+            background: #000; border: 1px solid var(--border); padding: 12px;
+            border-radius: 8px; color: #fff; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); }
+
+        /* --- TABELAS --- */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 15px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.9rem; }
+
+        .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
+        .pill-pendente { background: #1a1a1a; color: #666; border: 1px solid #333; }
+        .pill-recebido { background: #fff; color: #000; }
 
         .hidden { display: none; }
     </style>
@@ -105,5 +111,286 @@
         <div class="orbit-icon brl-orbit"><i class="fa-solid fa-brazilian-real-sign"></i></div>
     </div>
     <div class="login-box">
-        <h1 style="color: var(--primary); margin: 0; letter-spacing: 2px;">HB - PAY</h1>
-        <p style="color: var(--text-dim); font-size: 0.7rem; margin-bottom: 30px; letter-spacing: 4px;">SILVER EDITION</p>
+        <h1 style="margin: 0; font-weight: 800; letter-spacing: -1px;">HB - PAY</h1>
+        <p style="color: var(--text-dim); font-size: 0.65rem; letter-spacing: 3px; margin-bottom: 30px;">CÂMBIO & LIQUIDEZ</p>
+        
+        <div style="margin-bottom: 15px;">
+            <input type="password" id="pass-input" placeholder="DIGITE SUA SENHA" style="text-align: center; width: 80%;">
+        </div>
+        
+        <button class="btn-premium" style="width: 88%;" onclick="autenticar()">Acessar Mesa</button>
+    </div>
+</div>
+
+<div id="app">
+    <aside class="sidebar">
+        <div class="nav-item active" onclick="trocarAba('dash', this)" title="Painel Geral"><i class="fa-solid fa-gauge-high"></i></div>
+        <div class="nav-item" onclick="trocarAba('operacional', this)" title="Mesa de Operações"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div class="nav-item" onclick="trocarAba('gestao', this)" title="Gestão de Lucro"><i class="fa-solid fa-chart-pie"></i></div>
+        <div class="nav-item" onclick="trocarAba('config', this)" title="Configurações"><i class="fa-solid fa-sliders"></i></div>
+    </aside>
+
+    <main class="main-container">
+        <section id="aba-dash">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
+                <div>
+                    <small style="color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;">Volume Total sob Custódia</small>
+                    <h1 id="total-geral-brl" style="font-size: 3.5rem; margin: 5px 0; font-weight: 800;">R$ 0,00</h1>
+                </div>
+                <div style="text-align: right;">
+                    <small style="color: var(--text-dim);">Contas a Liquidar</small>
+                    <div id="contas-pagar" style="font-size: 1.2rem; color: var(--accent);">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px;">
+                <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <canvas id="graficoUsdt" style="max-height: 200px;"></canvas>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <small style="color: var(--text-dim);">Fluxo de USDT</small>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="margin-top: 0; font-size: 0.9rem; color: var(--text-dim);">DESEMPENHO MENSAL (LUCRO)</h3>
+                    <div id="lucro-mensal-dash" style="font-size: 2.5rem; font-weight: 800; color: #fff;">R$ 0,00</div>
+                    <p style="font-size: 0.8rem; color: #444; margin-top: 10px;">Baseado nas taxas e spreads liquidados.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="aba-operacional" class="hidden">
+            <div style="display: grid; grid-template-columns: 280px 1fr; gap: 30px;">
+                <div class="card">
+                    <button class="btn-premium" style="width: 100%; margin-bottom: 20px;" onclick="cadastrarCliente()">+ Adicionar Cliente</button>
+                    <div id="lista-clientes"></div>
+                </div>
+                
+                <div id="painel-cliente" class="hidden">
+                    <div class="card">
+                        <h2 id="cliente-selecionado-nome" style="margin-top:0">Cliente</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
+                            <input type="text" id="in-usdt" placeholder="Volume USDT" oninput="formatarMoeda(this)">
+                            <input type="text" id="in-taxa" placeholder="Cotação (Ex: 5,25)" oninput="formatarCotacao(this)">
+                            <button class="btn-premium" onclick="lancarTrava()">Travar</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>USDT</th><th>TAXA</th><th>TOTAL BRL</th><th>STATUS</th><th>-</th></tr></thead>
+                            <tbody id="tabela-travas"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="font-size: 0.9rem;">Recebimentos PIX / Comprovantes</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
+                            <input type="text" id="in-pix" placeholder="Valor R$" oninput="formatarMoeda(this)">
+                            <input type="text" id="in-ref" placeholder="Ref/Comprovante">
+                            <button class="btn-premium" onclick="lancarPix()">Registrar</button>
+                        </div>
+                        <div id="lista-pix" style="margin-top: 20px;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="aba-gestao" class="hidden">
+            <div class="card">
+                <h2>Lançamento de Lucro/Despesa</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
+                    <input type="date" id="gestao-data">
+                    <select id="gestao-tipo">
+                        <option value="lucro">Faturamento (Spread)</option>
+                        <option value="despesa">Taxa TRX / Rede</option>
+                        <option value="operacional">Custo Operacional</option>
+                    </select>
+                    <input type="text" id="gestao-valor" placeholder="R$ 0,00" oninput="formatarMoeda(this)">
+                    <button class="btn-premium" onclick="lancarGestao()">Lançar</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Histórico de Gestão</h3>
+                <table>
+                    <thead><tr><th>Data</th><th>Tipo</th><th>Valor</th></tr></thead>
+                    <tbody id="tabela-gestao"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="aba-config" class="hidden">
+            <div class="card" style="max-width: 400px;">
+                <h3>Segurança</h3>
+                <input type="password" id="nova-senha" placeholder="Nova Senha" style="width: 100%; margin-bottom: 15px;">
+                <button class="btn-premium" onclick="alterarSenha()">Atualizar Senha</button>
+                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #222;">
+                <button class="btn-premium" style="background: #111; color: #444;" onclick="resetarSistema()">Apagar Banco de Dados</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    let SENHA = localStorage.getItem('hb_key') || '1881';
+    let db = JSON.parse(localStorage.getItem('hb_database_v8')) || { clientes: {}, historico: [] };
+    let clienteAtivo = null;
+    let chartObj = null;
+
+    function autenticar() {
+        const pass = document.getElementById('pass-input').value;
+        if(pass === SENHA) {
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'grid';
+            atualizarDashboard();
+        } else { alert("Chave de acesso incorreta."); }
+    }
+
+    function trocarAba(aba, el) {
+        document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+        document.getElementById('aba-' + aba).classList.remove('hidden');
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+        if(aba === 'dash') atualizarDashboard();
+        if(aba === 'operacional') renderizarListaClientes();
+        if(aba === 'gestao') renderizarGestao();
+    }
+
+    // --- LÓGICA DE NEGÓCIO (CÂMBIO) ---
+    function formatarMoeda(v) {
+        let valor = v.value.replace(/\D/g, "");
+        v.value = (valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    }
+
+    function formatarCotacao(v) {
+        let valor = v.value.replace(/\D/g, "");
+        if(valor.length > 1) v.value = valor.substring(0, 1) + "," + valor.substring(1, 5);
+    }
+
+    function converter(str) { return parseFloat(str.replace(/\./g, '').replace(',', '.')); }
+
+    function cadastrarCliente() {
+        const nome = prompt("Razão Social ou Nome do Cliente:");
+        if(!nome) return;
+        const id = 'cli_' + Date.now();
+        db.clientes[id] = { nome: nome, travas: [], pix: [] };
+        salvar(); renderizarListaClientes();
+    }
+
+    function renderizarListaClientes() {
+        const container = document.getElementById('lista-clientes');
+        container.innerHTML = '';
+        for(let id in db.clientes) {
+            container.innerHTML += `<div onclick="selecionarCliente('${id}')" style="padding:15px; background:${id===clienteAtivo?'#fff':'#111'}; color:${id===clienteAtivo?'#000':'#666'}; margin-bottom:8px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.75rem;">${db.clientes[id].nome}</div>`;
+        }
+    }
+
+    function selecionarCliente(id) {
+        clienteAtivo = id;
+        document.getElementById('painel-cliente').classList.remove('hidden');
+        document.getElementById('cliente-selecionado-nome').innerText = db.clientes[id].nome;
+        renderizarListaClientes();
+        renderizarOperacional();
+    }
+
+    function lancarTrava() {
+        const u = converter(document.getElementById('in-usdt').value);
+        const t = converter(document.getElementById('in-taxa').value);
+        if(u && t) {
+            db.clientes[clienteAtivo].travas.push({ usdt: u, taxa: t, status: 'pendente' });
+            salvar(); renderizarOperacional();
+            document.getElementById('in-usdt').value = ''; document.getElementById('in-taxa').value = '';
+        }
+    }
+
+    function renderizarOperacional() {
+        const body = document.getElementById('tabela-travas');
+        const pixContainer = document.getElementById('lista-pix');
+        body.innerHTML = ''; pixContainer.innerHTML = '';
+        
+        db.clientes[clienteAtivo].travas.forEach((tr, i) => {
+            let totalBRL = tr.usdt * tr.taxa;
+            body.innerHTML += `<tr>
+                <td>₮ ${tr.usdt.toLocaleString('pt-BR')}</td>
+                <td>${tr.taxa.toFixed(4)}</td>
+                <td>R$ ${totalBRL.toLocaleString('pt-BR')}</td>
+                <td><span class="status-pill pill-${tr.status}" onclick="alternarStatus(${i})">${tr.status}</span></td>
+                <td><i class="fa-solid fa-trash" style="opacity:0.2; cursor:pointer" onclick="removerTrava(${i})"></i></td>
+            </tr>`;
+        });
+
+        db.clientes[clienteAtivo].pix.forEach((p, i) => {
+            pixContainer.innerHTML += `<div style="display:flex; justify-content:space-between; background:#000; padding:10px; border:1px solid #111; border-radius:8px; margin-bottom:5px;">
+                <span><b>R$ ${p.valor.toLocaleString('pt-BR')}</b> <small style="color:#444; margin-left:10px">${p.ref}</small></span>
+                <i class="fa-solid fa-xmark" onclick="removerPix(${i})" style="cursor:pointer; color:#333"></i>
+            </div>`;
+        });
+    }
+
+    function alternarStatus(i) {
+        let st = db.clientes[clienteAtivo].travas[i].status;
+        db.clientes[clienteAtivo].travas[i].status = (st === 'pendente') ? 'recebido' : 'pendente';
+        salvar(); renderizarOperacional();
+    }
+
+    function lancarPix() {
+        const v = converter(document.getElementById('in-pix').value);
+        const ref = document.getElementById('in-ref').value || 'PIX';
+        if(v) {
+            db.clientes[clienteAtivo].pix.push({ valor: v, ref: ref });
+            salvar(); renderizarOperacional();
+            document.getElementById('in-pix').value = ''; document.getElementById('in-ref').value = '';
+        }
+    }
+
+    function lancarGestao() {
+        const d = document.getElementById('gestao-data').value;
+        const t = document.getElementById('gestao-tipo').value;
+        const v = converter(document.getElementById('gestao-valor').value);
+        if(d && v) {
+            db.historico.push({ data: d, tipo: t, valor: v });
+            salvar(); renderizarGestao();
+        }
+    }
+
+    function renderizarGestao() {
+        const b = document.getElementById('tabela-gestao'); b.innerHTML = '';
+        db.historico.forEach(h => {
+            b.innerHTML += `<tr><td>${h.data}</td><td>${h.tipo}</td><td>R$ ${h.valor.toLocaleString('pt-BR')}</td></tr>`;
+        });
+    }
+
+    function atualizarDashboard() {
+        let total = 0, aLiquidar = 0, rec = 0, pend = 0, lucro = 0;
+        for(let id in db.clientes) {
+            db.clientes[id].travas.forEach(t => {
+                let v = t.usdt * t.taxa;
+                total += v;
+                if(t.status === 'pendente') { aLiquidar += v; pend += t.usdt; } else { rec += t.usdt; }
+            });
+        }
+        db.historico.forEach(h => { if(h.tipo === 'lucro') lucro += h.valor; else lucro -= h.valor; });
+
+        document.getElementById('total-geral-brl').innerText = `R$ ${total.toLocaleString('pt-BR')}`;
+        document.getElementById('contas-pagar').innerText = `R$ ${aLiquidar.toLocaleString('pt-BR')}`;
+        document.getElementById('lucro-mensal-dash').innerText = `R$ ${lucro.toLocaleString('pt-BR')}`;
+        
+        initChart(rec, pend);
+    }
+
+    function initChart(rec, pend) {
+        const ctx = document.getElementById('graficoUsdt').getContext('2d');
+        if(chartObj) chartObj.destroy();
+        chartObj = new Chart(ctx, {
+            type: 'doughnut',
+            data: { datasets: [{ data: [rec || 1, pend || 0], backgroundColor: ['#fff', '#222'], borderWidth: 0 }] },
+            options: { cutout: '85%', plugins: { legend: { display: false } } }
+        });
+    }
+
+    function salvar() { localStorage.setItem('hb_database_v8', JSON.stringify(db)); }
+    function alterarSenha() { const s = document.getElementById('nova-senha').value; if(s) { SENHA = s; localStorage.setItem('hb_key', s); alert("Senha Atualizada!"); } }
+    function resetarSistema() { if(confirm("Deseja apagar todos os dados do sistema?")) { localStorage.clear(); location.reload(); } }
+    
+    // Funções de remoção
+    function removerTrava(i) { db.clientes[clienteAtivo].travas.splice(i,1); salvar(); renderizarOperacional(); }
+    function removerPix(i) { db.clientes[clienteAtivo].pix.splice(i,1); salvar(); renderizarOperacional(); }
+</script>
+</body>
+</html>
