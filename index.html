@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HB - PAY | Mesa de Câmbio Executiva</title>
+    <title>HB - PAY | Gestão de Liquidez & Câmbio</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         :root {
-            --primary: #ffffff; /* Branco Puro */
-            --accent: #c0c0c0; /* Prata Metálico */
-            --bg-dark: #000000; /* Fundo Black */
-            --card-bg: #0f0f0f; /* Cards Carbono */
+            --primary: #ffffff;
+            --accent: #c0c0c0;
+            --bg-dark: #000000;
+            --card-bg: #0f0f0f;
             --text-main: #ffffff;
             --text-dim: #666666;
-            --success: #e0e0e0;
-            --danger: #ff4d4d;
-            --border: rgba(255, 255, 255, 0.1);
+            --success: #00ff88;
+            --danger: #ff3333;
+            --border: rgba(255, 255, 255, 0.08);
         }
 
         body, html {
@@ -25,82 +28,75 @@
             background-color: var(--bg-dark); color: var(--text-main); overflow: hidden;
         }
 
-        /* --- TELA DE LOGIN COM ÍCONES EM ÓRBITA --- */
+        /* --- LOGIN COM ÓRBITA CORRIGIDA --- */
         #lock-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            display: flex; justify-content: center; align-items: center; z-index: 10000;
+            background: #000; display: flex; justify-content: center; align-items: center; z-index: 10000;
         }
         .orbit-container {
-            position: absolute; width: 350px; height: 350px;
-            display: flex; justify-content: center; align-items: center;
+            position: absolute; width: 500px; height: 500px;
+            display: flex; justify-content: center; align-items: center; pointer-events: none;
         }
         .orbit-icon {
-            position: absolute; font-size: 1.8rem; color: var(--accent);
-            filter: drop-shadow(0 0 8px rgba(255,255,255,0.2));
+            position: absolute; font-size: 2.5rem; color: var(--accent);
+            z-index: 10001; /* Fica acima do box se necessário */
         }
-        .usdt-orbit { animation: orbit1 8s linear infinite; }
-        .brl-orbit { animation: orbit2 8s linear infinite; }
+        .usdt-orbit { animation: orbit1 10s linear infinite; }
+        .brl-orbit { animation: orbit2 10s linear infinite; }
 
         @keyframes orbit1 {
-            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
-            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+            from { transform: rotate(0deg) translateX(220px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(220px) rotate(-360deg); }
         }
         @keyframes orbit2 {
-            from { transform: rotate(180deg) translateX(150px) rotate(-180deg); }
-            to { transform: rotate(540deg) translateX(150px) rotate(-540deg); }
+            from { transform: rotate(180deg) translateX(220px) rotate(-180deg); }
+            to { transform: rotate(540deg) translateX(220px) rotate(-540deg); }
         }
 
         .login-box {
-            position: relative; background: rgba(15, 15, 15, 0.9); padding: 40px; 
-            border-radius: 20px; border: 1px solid var(--border); text-align: center; 
-            width: 320px; backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative; background: rgba(15, 15, 15, 0.95); padding: 50px; 
+            border-radius: 24px; border: 1px solid var(--border); text-align: center; 
+            width: 320px; backdrop-filter: blur(20px); z-index: 5;
         }
 
-        /* --- ESTRUTURA PRINCIPAL --- */
+        /* --- LAYOUT --- */
         #app { display: none; height: 100vh; grid-template-columns: 80px 1fr; }
-        
-        .sidebar {
-            background: #000; border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center; padding: 30px 0;
-        }
-        .nav-item {
-            color: var(--text-dim); font-size: 1.4rem; margin: 25px 0; cursor: pointer; transition: 0.3s;
-        }
-        .nav-item:hover, .nav-item.active { color: var(--primary); }
-        .nav-item.active { border-right: 3px solid var(--primary); width: 100%; text-align: center; }
+        .sidebar { background: #000; border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 30px 0; }
+        .nav-item { color: var(--text-dim); font-size: 1.4rem; margin: 25px 0; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { color: var(--primary); }
 
-        .main-container { padding: 40px; overflow-y: auto; background: #050505; }
+        .main-container { padding: 30px; overflow-y: auto; background: #050505; position: relative; }
         
-        .card {
-            background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border);
-            padding: 25px; margin-bottom: 25px;
+        /* HEADER DE COTAÇÃO E STATUS */
+        .top-header {
+            display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;
         }
+        .status-cards { display: flex; gap: 15px; }
+        .status-indicator {
+            background: var(--card-bg); border: 1px solid var(--border); padding: 15px 20px; border-radius: 12px;
+        }
+        .val-red { color: var(--danger); font-weight: 800; }
+        .val-green { color: var(--success); font-weight: 800; }
 
-        /* --- BOTÕES E INPUTS ESTILO PREMIUM --- */
+        .quote-box { text-align: right; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .quote-row { font-size: 0.8rem; margin-bottom: 5px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+
+        .card { background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border); padding: 20px; margin-bottom: 20px; }
+
         .btn-premium {
-            background: #fff; color: #000; border: none; padding: 12px 24px;
-            border-radius: 8px; font-weight: 800; cursor: pointer; text-transform: uppercase;
-            font-size: 0.75rem; letter-spacing: 1px; transition: 0.3s;
+            background: #fff; color: #000; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.7rem; text-transform: uppercase;
         }
-        .btn-premium:hover { background: var(--accent); transform: scale(1.02); }
-
-        input, select {
-            background: #000; border: 1px solid var(--border); padding: 12px;
-            border-radius: 8px; color: #fff; outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: var(--accent); }
-
-        /* --- TABELAS --- */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 12px; color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        td { padding: 15px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.9rem; }
-
-        .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; cursor: pointer; }
-        .pill-pendente { background: #1a1a1a; color: #666; border: 1px solid #333; }
-        .pill-recebido { background: #fff; color: #000; }
+        
+        input, select { background: #000; border: 1px solid var(--border); padding: 10px; border-radius: 8px; color: #fff; outline: none; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 10px; color: var(--text-dim); font-size: 0.65rem; border-bottom: 1px solid var(--border); }
+        td { padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.85rem; }
 
         .hidden { display: none; }
+        .btn-copy { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 0.9rem; }
+        .btn-copy:hover { color: #fff; }
     </style>
 </head>
 <body>
@@ -111,117 +107,147 @@
         <div class="orbit-icon brl-orbit"><i class="fa-solid fa-brazilian-real-sign"></i></div>
     </div>
     <div class="login-box">
-        <h1 style="margin: 0; font-weight: 800; letter-spacing: -1px;">HB - PAY</h1>
-        <p style="color: var(--text-dim); font-size: 0.65rem; letter-spacing: 3px; margin-bottom: 30px;">CÂMBIO & LIQUIDEZ</p>
-        
-        <div style="margin-bottom: 15px;">
-            <input type="password" id="pass-input" placeholder="DIGITE SUA SENHA" style="text-align: center; width: 80%;">
-        </div>
-        
-        <button class="btn-premium" style="width: 88%;" onclick="autenticar()">Acessar Mesa</button>
+        <h1 style="margin: 0; font-weight: 800;">HB - PAY</h1>
+        <p style="color: var(--text-dim); font-size: 0.6rem; letter-spacing: 3px; margin-bottom: 30px;">GESTÃO DE LIQUIDEZ</p>
+        <input type="password" id="pass-input" placeholder="SENHA" style="text-align: center; width: 80%; margin-bottom: 20px;">
+        <button class="btn-premium" style="width: 88%;" onclick="autenticar()">Acessar Gestão</button>
     </div>
 </div>
 
 <div id="app">
     <aside class="sidebar">
-        <div class="nav-item active" onclick="trocarAba('dash', this)" title="Painel Geral"><i class="fa-solid fa-gauge-high"></i></div>
-        <div class="nav-item" onclick="trocarAba('operacional', this)" title="Mesa de Operações"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-        <div class="nav-item" onclick="trocarAba('gestao', this)" title="Gestão de Lucro"><i class="fa-solid fa-chart-pie"></i></div>
-        <div class="nav-item" onclick="trocarAba('config', this)" title="Configurações"><i class="fa-solid fa-sliders"></i></div>
+        <div class="nav-item active" onclick="trocarAba('dash', this)"><i class="fa-solid fa-gauge-high"></i></div>
+        <div class="nav-item" onclick="trocarAba('operacional', this)"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+        <div class="nav-item" onclick="trocarAba('gestao', this)"><i class="fa-solid fa-chart-pie"></i></div>
+        <div class="nav-item" onclick="trocarAba('config', this)"><i class="fa-solid fa-sliders"></i></div>
     </aside>
 
     <main class="main-container">
-        <section id="aba-dash">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px;">
-                <div>
-                    <small style="color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;">Volume Total sob Custódia</small>
-                    <h1 id="total-geral-brl" style="font-size: 3.5rem; margin: 5px 0; font-weight: 800;">R$ 0,00</h1>
+        <header class="top-header">
+            <div class="status-cards">
+                <div class="status-indicator">
+                    <small style="color:var(--text-dim)">PAGAR (FORNECEDOR)</small>
+                    <div id="status-pagar" class="val-red">R$ 0,00</div>
                 </div>
-                <div style="text-align: right;">
-                    <small style="color: var(--text-dim);">Contas a Liquidar</small>
-                    <div id="contas-pagar" style="font-size: 1.2rem; color: var(--accent);">R$ 0,00</div>
+                <div class="status-indicator">
+                    <small style="color:var(--text-dim)">RECEBER (PIX)</small>
+                    <div id="status-receber" class="val-green">R$ 0,00</div>
+                </div>
+                <div class="status-indicator">
+                    <small style="color:var(--text-dim)">SALDO USDT</small>
+                    <div id="status-usdt" class="val-green">₮ 0,00</div>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px;">
-                <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                    <canvas id="graficoUsdt" style="max-height: 200px;"></canvas>
-                    <div style="margin-top: 20px; text-align: center;">
-                        <small style="color: var(--text-dim);">Fluxo de USDT</small>
+            <div class="quote-box">
+                <div class="quote-row">
+                    <span style="color:var(--text-dim)">DÓLAR COMERCIAL:</span>
+                    <b id="val-comercial">R$ 0,00</b>
+                </div>
+                <div class="quote-row">
+                    <span style="color:var(--text-dim)">TAXA (+0.35%):</span>
+                    <b id="val-spread" style="color:var(--accent)">R$ 0,00</b>
+                    <button class="btn-copy" onclick="copyTaxa()"><i class="fa-regular fa-copy"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <section id="aba-dash">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="card">
+                    <small style="color:var(--text-dim)">FLUXO DE CAIXA (BRL)</small>
+                    <div style="display:flex; justify-content:space-between; margin-top:15px;">
+                        <div>
+                            <div style="font-size:0.7rem; color:var(--text-dim)">DINHEIRO ENVIADO</div>
+                            <div id="dash-enviado" style="font-size:1.4rem; font-weight:800;">R$ 0,00</div>
+                        </div>
+                        <div style="text-align:right">
+                            <div style="font-size:0.7rem; color:var(--text-dim)">FALTANDO ENVIAR</div>
+                            <div id="dash-falta-enviar" style="font-size:1.4rem; font-weight:800; color:var(--danger)">R$ 0,00</div>
+                        </div>
                     </div>
                 </div>
                 <div class="card">
-                    <h3 style="margin-top: 0; font-size: 0.9rem; color: var(--text-dim);">DESEMPENHO MENSAL (LUCRO)</h3>
-                    <div id="lucro-mensal-dash" style="font-size: 2.5rem; font-weight: 800; color: #fff;">R$ 0,00</div>
-                    <p style="font-size: 0.8rem; color: #444; margin-top: 10px;">Baseado nas taxas e spreads liquidados.</p>
+                    <small style="color:var(--text-dim)">LUCRO LÍQUIDO ACUMULADO</small>
+                    <div id="dash-lucro-real" style="font-size:2.5rem; font-weight:800; margin-top:10px;">R$ 0,00</div>
                 </div>
             </div>
         </section>
 
         <section id="aba-operacional" class="hidden">
-            <div style="display: grid; grid-template-columns: 280px 1fr; gap: 30px;">
+            <div style="display: grid; grid-template-columns: 250px 1fr; gap: 25px;">
                 <div class="card">
-                    <button class="btn-premium" style="width: 100%; margin-bottom: 20px;" onclick="cadastrarCliente()">+ Adicionar Cliente</button>
+                    <button class="btn-premium" style="width:100%; margin-bottom:15px;" onclick="addCliente()">+ NOVO CLIENTE</button>
                     <div id="lista-clientes"></div>
                 </div>
-                
                 <div id="painel-cliente" class="hidden">
                     <div class="card">
-                        <h2 id="cliente-selecionado-nome" style="margin-top:0">Cliente</h2>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
-                            <input type="text" id="in-usdt" placeholder="Volume USDT" oninput="formatarMoeda(this)">
-                            <input type="text" id="in-taxa" placeholder="Cotação (Ex: 5,25)" oninput="formatarCotacao(this)">
-                            <button class="btn-premium" onclick="lancarTrava()">Travar</button>
+                        <div style="display:flex; justify-content:space-between; align-items:center">
+                            <h2 id="cli-nome" style="margin:0">Cliente</h2>
+                            <div id="cli-calculo-rapido" style="text-align:right; font-size:0.8rem">
+                                <div>Pendência: <b id="cli-pend-brl" class="val-red">R$ 0,00</b></div>
+                                <div>A enviar: <b id="cli-pend-usdt">₮ 0,00</b></div>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; margin-top:20px;">
+                            <input type="text" id="in-u" placeholder="Volume USDT" oninput="fMoney(this)">
+                            <input type="text" id="in-t" placeholder="Taxa" oninput="fCot(this)">
+                            <button class="btn-premium" onclick="lancarT()">TRAVAR</button>
                         </div>
                         <table>
-                            <thead><tr><th>USDT</th><th>TAXA</th><th>TOTAL BRL</th><th>STATUS</th><th>-</th></tr></thead>
-                            <tbody id="tabela-travas"></tbody>
+                            <thead><tr><th>USDT</th><th>TAXA</th><th>TOTAL BRL</th><th>STATUS</th></tr></thead>
+                            <tbody id="tab-travas"></tbody>
                         </table>
                     </div>
-
                     <div class="card">
-                        <h3 style="font-size: 0.9rem;">Recebimentos PIX / Comprovantes</h3>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
-                            <input type="text" id="in-pix" placeholder="Valor R$" oninput="formatarMoeda(this)">
-                            <input type="text" id="in-ref" placeholder="Ref/Comprovante">
-                            <button class="btn-premium" onclick="lancarPix()">Registrar</button>
+                        <h3>Comprovantes & PIX</h3>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px;">
+                            <input type="text" id="in-p" placeholder="Valor R$" oninput="fMoney(this)">
+                            <input type="file" id="in-file" style="font-size:0.7rem">
+                            <button class="btn-premium" onclick="lancarP()">REGISTRAR</button>
                         </div>
-                        <div id="lista-pix" style="margin-top: 20px;"></div>
+                        <div id="lista-p" style="margin-top:15px;"></div>
                     </div>
                 </div>
             </div>
         </section>
 
         <section id="aba-gestao" class="hidden">
-            <div class="card">
-                <h2>Lançamento de Lucro/Despesa</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px;">
-                    <input type="date" id="gestao-data">
-                    <select id="gestao-tipo">
-                        <option value="lucro">Faturamento (Spread)</option>
-                        <option value="despesa">Taxa TRX / Rede</option>
-                        <option value="operacional">Custo Operacional</option>
-                    </select>
-                    <input type="text" id="gestao-valor" placeholder="R$ 0,00" oninput="formatarMoeda(this)">
-                    <button class="btn-premium" onclick="lancarGestao()">Lançar</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+                <div class="card">
+                    <h3>RELATÓRIO SEMANAL</h3>
+                    <p style="font-size:0.7rem; color:var(--text-dim)">Faturamento e despesas dos últimos 7 dias.</p>
+                    <button class="btn-premium" onclick="exportPDF('semanal')">EXPORTAR PDF SEMANAL</button>
+                </div>
+                <div class="card">
+                    <h3>RELATÓRIO MENSAL</h3>
+                    <p style="font-size:0.7rem; color:var(--text-dim)">Fechamento completo do mês vigente.</p>
+                    <button class="btn-premium" onclick="exportPDF('mensal')">EXPORTAR PDF MENSAL</button>
                 </div>
             </div>
             <div class="card">
-                <h3>Histórico de Gestão</h3>
-                <table>
-                    <thead><tr><th>Data</th><th>Tipo</th><th>Valor</th></tr></thead>
-                    <tbody id="tabela-gestao"></tbody>
+                <h3>Lançamentos de Encargos</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:10px;">
+                    <input type="date" id="g-data">
+                    <select id="g-tipo">
+                        <option value="faturamento">Entrada Spread</option>
+                        <option value="encargos">Encargos & Benefícios (Salário/Almoço)</option>
+                        <option value="infra">Infraestrutura / Taxas</option>
+                    </select>
+                    <input type="text" id="g-val" placeholder="R$ 0,00" oninput="fMoney(this)">
+                    <button class="btn-premium" onclick="lancarG()">LANÇAR</button>
+                </div>
+                <table id="tab-g" style="margin-top:20px;">
+                    <thead><tr><th>DATA</th><th>TIPO</th><th>VALOR</th></tr></thead>
+                    <tbody id="body-g"></tbody>
                 </table>
             </div>
         </section>
 
         <section id="aba-config" class="hidden">
-            <div class="card" style="max-width: 400px;">
+            <div class="card" style="max-width:400px;">
                 <h3>Segurança</h3>
-                <input type="password" id="nova-senha" placeholder="Nova Senha" style="width: 100%; margin-bottom: 15px;">
-                <button class="btn-premium" onclick="alterarSenha()">Atualizar Senha</button>
-                <hr style="margin: 30px 0; border: 0; border-top: 1px solid #222;">
-                <button class="btn-premium" style="background: #111; color: #444;" onclick="resetarSistema()">Apagar Banco de Dados</button>
+                <button class="btn-premium" onclick="localStorage.clear(); location.reload();">RESETAR SISTEMA</button>
             </div>
         </section>
     </main>
@@ -229,168 +255,173 @@
 
 <script>
     let SENHA = localStorage.getItem('hb_key') || '1881';
-    let db = JSON.parse(localStorage.getItem('hb_database_v8')) || { clientes: {}, historico: [] };
-    let clienteAtivo = null;
-    let chartObj = null;
+    let db = JSON.parse(localStorage.getItem('hb_db_v9')) || { clientes: {}, gestao: [] };
+    let cliAtivo = null;
+    let taxaGlobal = 0;
+
+    // --- SISTEMA ---
+    async function getTaxa() {
+        try {
+            const r = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
+            const d = await r.json();
+            taxaGlobal = parseFloat(d.USDBRL.bid);
+            document.getElementById('val-comercial').innerText = 'R$ ' + taxaGlobal.toFixed(2);
+            document.getElementById('val-spread').innerText = 'R$ ' + (taxaGlobal * 1.0035).toFixed(4);
+        } catch(e) { console.log("Erro taxa"); }
+    }
+    setInterval(getTaxa, 30000); getTaxa();
+
+    function copyTaxa() {
+        const t = document.getElementById('val-spread').innerText;
+        navigator.clipboard.writeText(t);
+        alert("Taxa copiada: " + t);
+    }
 
     function autenticar() {
-        const pass = document.getElementById('pass-input').value;
-        if(pass === SENHA) {
+        if(document.getElementById('pass-input').value === SENHA) {
             document.getElementById('lock-screen').style.display = 'none';
             document.getElementById('app').style.display = 'grid';
-            atualizarDashboard();
-        } else { alert("Chave de acesso incorreta."); }
+            refreshDash();
+        } else { alert("Acesso negado"); }
     }
 
     function trocarAba(aba, el) {
         document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
         document.getElementById('aba-' + aba).classList.remove('hidden');
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        if(el) el.classList.add('active');
-        if(aba === 'dash') atualizarDashboard();
-        if(aba === 'operacional') renderizarListaClientes();
-        if(aba === 'gestao') renderizarGestao();
+        el.classList.add('active');
+        if(aba === 'dash') refreshDash();
+        if(aba === 'operacional') renderClientes();
+        if(aba === 'gestao') renderG();
     }
 
-    // --- LÓGICA DE NEGÓCIO (CÂMBIO) ---
-    function formatarMoeda(v) {
-        let valor = v.value.replace(/\D/g, "");
-        v.value = (valor / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+    // --- FORMATAÇÃO ---
+    function fMoney(v) { let val = v.value.replace(/\D/g, ""); v.value = (val / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }); }
+    function fCot(v) { let val = v.value.replace(/\D/g, ""); if(val.length > 1) v.value = val.substring(0, 1) + "," + val.substring(1, 5); }
+    function conv(s) { return parseFloat(s.replace(/\./g, '').replace(',', '.')); }
+
+    // --- OPERACIONAL ---
+    function addCliente() {
+        const n = prompt("Nome do Cliente:");
+        if(!n) return;
+        const id = 'c' + Date.now();
+        db.clientes[id] = { nome: n, travas: [], pix: [] };
+        save(); renderClientes();
     }
 
-    function formatarCotacao(v) {
-        let valor = v.value.replace(/\D/g, "");
-        if(valor.length > 1) v.value = valor.substring(0, 1) + "," + valor.substring(1, 5);
-    }
-
-    function converter(str) { return parseFloat(str.replace(/\./g, '').replace(',', '.')); }
-
-    function cadastrarCliente() {
-        const nome = prompt("Razão Social ou Nome do Cliente:");
-        if(!nome) return;
-        const id = 'cli_' + Date.now();
-        db.clientes[id] = { nome: nome, travas: [], pix: [] };
-        salvar(); renderizarListaClientes();
-    }
-
-    function renderizarListaClientes() {
-        const container = document.getElementById('lista-clientes');
-        container.innerHTML = '';
+    function renderClientes() {
+        const c = document.getElementById('lista-clientes'); c.innerHTML = '';
         for(let id in db.clientes) {
-            container.innerHTML += `<div onclick="selecionarCliente('${id}')" style="padding:15px; background:${id===clienteAtivo?'#fff':'#111'}; color:${id===clienteAtivo?'#000':'#666'}; margin-bottom:8px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.75rem;">${db.clientes[id].nome}</div>`;
+            c.innerHTML += `<div onclick="setCli('${id}')" style="padding:12px; background:${id===cliAtivo?'#fff':'#111'}; color:${id===cliAtivo?'#000':'#666'}; margin-bottom:8px; border-radius:10px; cursor:pointer; font-weight:800; font-size:0.75rem;">${db.clientes[id].nome}</div>`;
         }
     }
 
-    function selecionarCliente(id) {
-        clienteAtivo = id;
+    function setCli(id) {
+        cliAtivo = id;
         document.getElementById('painel-cliente').classList.remove('hidden');
-        document.getElementById('cliente-selecionado-nome').innerText = db.clientes[id].nome;
-        renderizarListaClientes();
-        renderizarOperacional();
+        document.getElementById('cli-nome').innerText = db.clientes[id].nome;
+        renderClientes();
+        renderOps();
     }
 
-    function lancarTrava() {
-        const u = converter(document.getElementById('in-usdt').value);
-        const t = converter(document.getElementById('in-taxa').value);
+    function lancarT() {
+        const u = conv(document.getElementById('in-u').value);
+        const t = conv(document.getElementById('in-t').value);
         if(u && t) {
-            db.clientes[clienteAtivo].travas.push({ usdt: u, taxa: t, status: 'pendente' });
-            salvar(); renderizarOperacional();
-            document.getElementById('in-usdt').value = ''; document.getElementById('in-taxa').value = '';
+            db.clientes[cliAtivo].travas.push({ u, t, st: 'pendente' });
+            save(); renderOps();
+            document.getElementById('in-u').value = ''; document.getElementById('in-t').value = '';
         }
     }
 
-    function renderizarOperacional() {
-        const body = document.getElementById('tabela-travas');
-        const pixContainer = document.getElementById('lista-pix');
-        body.innerHTML = ''; pixContainer.innerHTML = '';
-        
-        db.clientes[clienteAtivo].travas.forEach((tr, i) => {
-            let totalBRL = tr.usdt * tr.taxa;
-            body.innerHTML += `<tr>
-                <td>₮ ${tr.usdt.toLocaleString('pt-BR')}</td>
-                <td>${tr.taxa.toFixed(4)}</td>
-                <td>R$ ${totalBRL.toLocaleString('pt-BR')}</td>
-                <td><span class="status-pill pill-${tr.status}" onclick="alternarStatus(${i})">${tr.status}</span></td>
-                <td><i class="fa-solid fa-trash" style="opacity:0.2; cursor:pointer" onclick="removerTrava(${i})"></i></td>
+    function renderOps() {
+        const b = document.getElementById('tab-travas'); b.innerHTML = '';
+        const p = document.getElementById('lista-p'); p.innerHTML = '';
+        let pendBRL = 0, pendUSDT = 0;
+
+        db.clientes[cliAtivo].travas.forEach((tr, i) => {
+            let total = tr.u * tr.t;
+            if(tr.st === 'pendente') { pendBRL += total; pendUSDT += tr.u; }
+            b.innerHTML += `<tr>
+                <td>₮ ${tr.u.toLocaleString('pt-BR')}</td>
+                <td>${tr.t.toFixed(4)}</td>
+                <td>R$ ${total.toLocaleString('pt-BR')}</td>
+                <td><button onclick="toggleT(${i})" style="background:${tr.st==='pendente'?'#222':'#fff'}; color:${tr.st==='pendente'?'#666':'#000'}; border:none; padding:4px 8px; border-radius:4px; font-size:0.6rem; cursor:pointer">${tr.st.toUpperCase()}</button></td>
             </tr>`;
         });
 
-        db.clientes[clienteAtivo].pix.forEach((p, i) => {
-            pixContainer.innerHTML += `<div style="display:flex; justify-content:space-between; background:#000; padding:10px; border:1px solid #111; border-radius:8px; margin-bottom:5px;">
-                <span><b>R$ ${p.valor.toLocaleString('pt-BR')}</b> <small style="color:#444; margin-left:10px">${p.ref}</small></span>
-                <i class="fa-solid fa-xmark" onclick="removerPix(${i})" style="cursor:pointer; color:#333"></i>
-            </div>`;
+        document.getElementById('cli-pend-brl').innerText = 'R$ ' + pendBRL.toLocaleString('pt-BR');
+        document.getElementById('cli-pend-usdt').innerText = '₮ ' + pendUSDT.toLocaleString('pt-BR');
+
+        db.clientes[cliAtivo].pix.forEach(px => {
+            p.innerHTML += `<div style="background:#000; padding:10px; border:1px solid #111; border-radius:8px; margin-bottom:5px; font-size:0.8rem">PIX: R$ ${px.v.toLocaleString('pt-BR')} <small style="color:#444">| Ref: ${px.ref}</small></div>`;
         });
     }
 
-    function alternarStatus(i) {
-        let st = db.clientes[clienteAtivo].travas[i].status;
-        db.clientes[clienteAtivo].travas[i].status = (st === 'pendente') ? 'recebido' : 'pendente';
-        salvar(); renderizarOperacional();
+    function toggleT(i) {
+        db.clientes[cliAtivo].travas[i].st = db.clientes[cliAtivo].travas[i].st === 'pendente' ? 'recebido' : 'pendente';
+        save(); renderOps();
     }
 
-    function lancarPix() {
-        const v = converter(document.getElementById('in-pix').value);
-        const ref = document.getElementById('in-ref').value || 'PIX';
+    function lancarP() {
+        const v = conv(document.getElementById('in-p').value);
         if(v) {
-            db.clientes[clienteAtivo].pix.push({ valor: v, ref: ref });
-            salvar(); renderizarOperacional();
-            document.getElementById('in-pix').value = ''; document.getElementById('in-ref').value = '';
+            db.clientes[cliAtivo].pix.push({ v: v, ref: 'Confirmado' });
+            save(); renderOps();
+            document.getElementById('in-p').value = '';
         }
     }
 
-    function lancarGestao() {
-        const d = document.getElementById('gestao-data').value;
-        const t = document.getElementById('gestao-tipo').value;
-        const v = converter(document.getElementById('gestao-valor').value);
+    // --- GESTÃO & DASH ---
+    function lancarG() {
+        const d = document.getElementById('g-data').value;
+        const t = document.getElementById('g-tipo').value;
+        const v = conv(document.getElementById('g-val').value);
         if(d && v) {
-            db.historico.push({ data: d, tipo: t, valor: v });
-            salvar(); renderizarGestao();
+            db.gestao.push({ d, t, v });
+            save(); renderG();
         }
     }
 
-    function renderizarGestao() {
-        const b = document.getElementById('tabela-gestao'); b.innerHTML = '';
-        db.historico.forEach(h => {
-            b.innerHTML += `<tr><td>${h.data}</td><td>${h.tipo}</td><td>R$ ${h.valor.toLocaleString('pt-BR')}</td></tr>`;
+    function renderG() {
+        const b = document.getElementById('body-g'); b.innerHTML = '';
+        db.gestao.forEach(g => {
+            b.innerHTML += `<tr><td>${g.d}</td><td>${g.t}</td><td>R$ ${g.v.toLocaleString('pt-BR')}</td></tr>`;
         });
     }
 
-    function atualizarDashboard() {
-        let total = 0, aLiquidar = 0, rec = 0, pend = 0, lucro = 0;
+    function refreshDash() {
+        let aPagar = 0, aReceber = 0, usdt = 0, enviado = 0;
         for(let id in db.clientes) {
             db.clientes[id].travas.forEach(t => {
-                let v = t.usdt * t.taxa;
-                total += v;
-                if(t.status === 'pendente') { aLiquidar += v; pend += t.usdt; } else { rec += t.usdt; }
+                if(t.st === 'pendente') { aPagar += (t.u * t.t); usdt += t.u; }
+                else { enviado += (t.u * t.t); }
             });
+            db.clientes[id].pix.forEach(p => { aReceber += p.v; });
         }
-        db.historico.forEach(h => { if(h.tipo === 'lucro') lucro += h.valor; else lucro -= h.valor; });
+        let lucro = 0;
+        db.gestao.forEach(g => { if(g.t === 'faturamento') lucro += g.v; else lucro -= g.v; });
 
-        document.getElementById('total-geral-brl').innerText = `R$ ${total.toLocaleString('pt-BR')}`;
-        document.getElementById('contas-pagar').innerText = `R$ ${aLiquidar.toLocaleString('pt-BR')}`;
-        document.getElementById('lucro-mensal-dash').innerText = `R$ ${lucro.toLocaleString('pt-BR')}`;
-        
-        initChart(rec, pend);
+        document.getElementById('status-pagar').innerText = 'R$ ' + aPagar.toLocaleString('pt-BR');
+        document.getElementById('status-receber').innerText = 'R$ ' + aReceber.toLocaleString('pt-BR');
+        document.getElementById('status-usdt').innerText = '₮ ' + usdt.toLocaleString('pt-BR');
+        document.getElementById('dash-enviado').innerText = 'R$ ' + enviado.toLocaleString('pt-BR');
+        document.getElementById('dash-falta-enviar').innerText = 'R$ ' + aPagar.toLocaleString('pt-BR');
+        document.getElementById('dash-lucro-real').innerText = 'R$ ' + lucro.toLocaleString('pt-BR');
     }
 
-    function initChart(rec, pend) {
-        const ctx = document.getElementById('graficoUsdt').getContext('2d');
-        if(chartObj) chartObj.destroy();
-        chartObj = new Chart(ctx, {
-            type: 'doughnut',
-            data: { datasets: [{ data: [rec || 1, pend || 0], backgroundColor: ['#fff', '#222'], borderWidth: 0 }] },
-            options: { cutout: '85%', plugins: { legend: { display: false } } }
-        });
-    }
+    function save() { localStorage.setItem('hb_db_v9', JSON.stringify(db)); }
 
-    function salvar() { localStorage.setItem('hb_database_v8', JSON.stringify(db)); }
-    function alterarSenha() { const s = document.getElementById('nova-senha').value; if(s) { SENHA = s; localStorage.setItem('hb_key', s); alert("Senha Atualizada!"); } }
-    function resetarSistema() { if(confirm("Deseja apagar todos os dados do sistema?")) { localStorage.clear(); location.reload(); } }
-    
-    // Funções de remoção
-    function removerTrava(i) { db.clientes[clienteAtivo].travas.splice(i,1); salvar(); renderizarOperacional(); }
-    function removerPix(i) { db.clientes[clienteAtivo].pix.splice(i,1); salvar(); renderizarOperacional(); }
+    // --- PDF EXPORT ---
+    function exportPDF(tipo) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("HB - PAY | RELATÓRIO " + tipo.toUpperCase(), 10, 10);
+        let rows = [];
+        db.gestao.forEach(g => rows.push([g.d, g.t, 'R$ ' + g.v.toLocaleString('pt-BR')]));
+        doc.autoTable({ head: [['Data', 'Tipo', 'Valor']], body: rows });
+        doc.save(`relatorio_${tipo}_hbpay.pdf`);
+    }
 </script>
 </body>
 </html>
